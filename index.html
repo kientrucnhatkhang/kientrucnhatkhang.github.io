@@ -245,7 +245,7 @@ function slideCb(inp){const b=inp.parentNode;b.querySelector('.bi').style.clipPa
 const CFG={"ai":"","hook":"","slots":"","days":"","dom":"https://kientrucnhatkhang.github.io"};let warned=0;
 const store=(k,v)=>{try{LS.setItem(k,v);return true}catch(e){if(!warned++)toast('⚠️ Bộ nhớ trình duyệt đã đầy – hãy bấm "Xuất File HTML" để lưu lại.',5000);return false}};
 const VER="v3";safe(()=>{if(LS.nk_ver!==VER){['nk_t','nk_i','nk_p','nk_logo'].forEach(k=>LS.removeItem(k));LS.nk_ver=VER}});
-const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=s=>String(s==null?'':s).(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cleanSheet=s=>{s=String(s==null?'':s).trim();return /^[=+\-@|\t\r\n]/.test(s)?"'"+s:s};
 /* Theme */
 function toggleTheme(){const d=document.documentElement,l=d.dataset.theme==='light';d.dataset.theme=l?'':'light';safe(()=>LS.nk_theme=d.dataset.theme)}
@@ -253,13 +253,13 @@ safe(()=>{if(LS.nk_theme)document.documentElement.dataset.theme=LS.nk_theme});
 /* Reveal */
 const io=new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('on')),{threshold:.05});$$('.rv').forEach(e=>io.observe(e));setTimeout(()=>$$('.rv').forEach(e=>e.classList.add('on')),250);
 /* Logo – Zero-Duplication: 1 biến duy nhất */
-const SITE_CONFIG={logoUrl:"https://i.ibb.co/3ykG5L4t/NHATKHANG.jpg"};const DFAV=$('#fav').getAttribute('href');
+const SITE_CONFIG={logoUrl:"logo.jpg"};const DFAV=$('#fav').getAttribute('href');
 function lgFail(el){const p=el.parentNode;if(p)p.innerHTML='<svg viewBox="0 0 64 64"><use href="#nk-logo-svg"/></svg>'}
 function applyLogo(){const u=SITE_CONFIG.logoUrl;$$('.nkl').forEach(e=>e.innerHTML=u?`<img src="${u}" alt="Logo Nhật Khang" onerror="lgFail(this)">`:'<svg viewBox="0 0 64 64"><use href="#nk-logo-svg"/></svg>');$('#fav').setAttribute('href',u||DFAV)}
 /* ===== CẨM NANG: 5 nhóm + tìm kiếm tức thì + trình đọc ===== */
 const GR=[['du-toan','Dự toán & Ngân sách','💰'],['phap-ly','Pháp lý & Hợp đồng','📜'],['vat-tu','Vật tư & Kỹ thuật thi công','🧱'],['phong-thuy','Phong thủy & Thiết kế','🧭'],['giam-sat','Giám sát & Nghiệm thu','✅']],CATG=['Dự toán','Kinh nghiệm','Vật liệu','Thiết kế','Kinh nghiệm'],ART=['Kinh nghiệm','Phong thủy','Dự toán','Vật liệu','Thiết kế'];
 const isArt=p=>ART.includes(p[1])||!!(p[6]&&Number.isInteger(p[6].g));
-const nz=s=>String(s||'').toLowerCase().replace(/đ/g,'d').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const nz=s=>String(s||'').toLowerCase().(/đ/g,'d').normalize('NFD').(/[\u0300-\u036f]/g,'');
 function gOf(p){if(p[6]&&Number.isInteger(p[6].g)&&p[6].g>=0&&p[6].g<5)return p[6].g;const t=nz(p[0]),c=p[1];
 if(/giay phep|hoan cong|hop dong|phap ly|thu tuc|hang xom|chon nha thau|nang tang|chuan bi truoc/.test(t))return 1;
 if(c==='Dự toán')return 0;if(c==='Phong thủy'||c==='Thiết kế')return 3;if(c==='Vật liệu')return 2;
@@ -301,8 +301,8 @@ const TPL=[
 function artBody(p){if(p[6]&&p[6].body)return p[6].body;const t=nz(p[0]),sp=SPEC.find(x=>x[0].test(t)),g=gOf(p),k=g*4,L=a=>a.map(x=>'- '+x).join('\n');
 return p[2]+'\n\n'+(sp?sp[1]+'\n\n':'')+'## Cần nắm trước khi quyết định\n'+L(TPL[k])+'\n\n## Checklist nhanh\n'+L(TPL[k+1])+'\n\n## Sai lầm thường gặp\n'+L(TPL[k+2])+'\n\n## Lưu ý cho Đà Nẵng và Miền Trung\n'+TPL[k+3]+'\n\n**Lưu ý:** nội dung mang tính tham khảo chung, cần đối chiếu điều kiện công trình thực tế và quy định hiện hành.'}
 const SYN=[[/chong tham|mua bao|khong dot|am moc/,'chong tham chong dot'],[/thep|be tong|xi mang/,'thep cot thep be tong'],[/giay phep|hoan cong|thu tuc|ho so/,'giay phep xay dung ho so'],[/\bmong\b|nen dat|dia chat/,'mong coc mong bang dia chat']];
-const hay=p=>{const sp=SPEC.find(x=>x[0].test(nz(p[0]))),h=nz(p[0]+' '+p[2]),b=h+' '+nz(((p[6]&&p[6].body)||(sp?sp[1]:''))+' '+GR[gOf(p)][1]);return(' '+b+' '+SYN.filter(x=>x[0].test(h)).map(x=>x[1]).join(' ')).replace(/[^a-z0-9]+/g,' ')};
-const mdl=s=>{let o='',u=0;const c=()=>{if(u){o+='</ul>';u=0}};String(s).split('\n').forEach(l=>{l=l.trim();if(!l){c();return}const e=esc(l).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');if(l.startsWith('## ')){c();o+='<h4>'+e.slice(3)+'</h4>'}else if(l.startsWith('- ')){if(!u){o+='<ul>';u=1}o+='<li>'+e.slice(2)+'</li>'}else{c();o+='<p>'+e+'</p>'}});c();return o};
+const hay=p=>{const sp=SPEC.find(x=>x[0].test(nz(p[0]))),h=nz(p[0]+' '+p[2]),b=h+' '+nz(((p[6]&&p[6].body)||(sp?sp[1]:''))+' '+GR[gOf(p)][1]);return(' '+b+' '+SYN.filter(x=>x[0].test(h)).map(x=>x[1]).join(' ')).(/[^a-z0-9]+/g,' ')};
+const mdl=s=>{let o='',u=0;const c=()=>{if(u){o+='</ul>';u=0}};String(s).split('\n').forEach(l=>{l=l.trim();if(!l){c();return}const e=esc(l).(/\*\*(.+?)\*\*/g,'<b>$1</b>');if(l.startsWith('## ')){c();o+='<h4>'+e.slice(3)+'</h4>'}else if(l.startsWith('- ')){if(!u){o+='<ul>';u=1}o+='<li>'+e.slice(2)+'</li>'}else{c();o+='<p>'+e+'</p>'}});c();return o};
 const rt=p=>Math.max(1,Math.round(artBody(p).split(/\s+/).length/180));
 let CF=-1;
 function csq(t){$('#cs').value=t;renderC();$('#cs').focus()}
@@ -313,9 +313,9 @@ $('#cg').innerHTML=S.length?S.map(([p,i])=>`<div class="card pj" data-i="${i}" t
 $('#ct').onclick=e=>{const b=e.target.closest('button');if(!b)return;CF=+b.dataset.g;renderC()};
 function toolFor(p){const t=nz(p[0]);if(/vay|giai ngan|tat toan/.test(t))return['#vv','Mô phỏng khoản vay cho hạng mục này'];if(/mau sac|son noi|gach|ngoai that/.test(t))return['#mbd','Phối thử vật liệu & màu sắc'];if(gOf(p)===3||/lo ban|huong/.test(t))return['#pt','Xem công cụ phong thủy liên quan'];if(/bao gia/.test(t))return['#qc','So sánh báo giá của bạn'];return['#dt','Tính khái toán chi phí cho hạng mục này']}
 function openArt(i){if(document.body.classList.contains('admin'))return;const p=P[i];if(!p)return;lastF=document.activeElement;const g=gOf(p),t=toolFor(p),rel=P.map((x,j)=>[x,j]).filter(([x,j])=>j!==i&&isArt(x)&&gOf(x)===g).slice(0,3);
-$('#arb').innerHTML=`<img class="cv" src="${esc(p[3]).replace('w=800','w=1200')}" alt="${esc(p[0])}"><div class="bd"><span class="gb">${GR[g][2]} Cẩm nang ${GR[g][1]}</span><h3>${esc(p[0])}</h3><div class="mt">⏱ ${rt(p)} phút đọc · Nhật Khang biên soạn · Mang tính tham khảo</div>${mdl(artBody(p))}<div class="ctab"><button class="btn p" onclick="artGo(${i})">🧮 ${t[1]}</button><button class="btn" onclick="zaloQ(${i})">💬 Gửi câu hỏi cho Kỹ sư trưởng qua Zalo</button><button class="btn" onclick="artSurvey(${i})">📝 Đăng ký khảo sát miễn phí</button><button class="btn" onclick="copyText(location.origin+location.pathname+'#cam-nang-${i}');toast('✅ Đã sao chép liên kết cẩm nang')">🔗 Sao chép liên kết</button></div>${rel.length?`<h4>Cẩm nang liên quan</h4><div class="rel">${rel.map(([x,j])=>`<button onclick="openArt(${j})">${esc(x[0])}</button>`).join('')}</div>`:''}</div>`;
-$('#ar').classList.add('on');$('#ars').scrollTop=0;$('#arp').style.width='0';safe(()=>history.replaceState(null,'','#cam-nang-'+i));$('#arx').focus()}
-function closeArt(){$('#ar').classList.remove('on');safe(()=>history.replaceState(null,'',location.pathname+location.search));lastF&&lastF.focus&&lastF.focus()}
+$('#arb').innerHTML=`<img class="cv" src="${esc(p[3]).('w=800','w=1200')}" alt="${esc(p[0])}"><div class="bd"><span class="gb">${GR[g][2]} Cẩm nang ${GR[g][1]}</span><h3>${esc(p[0])}</h3><div class="mt">⏱ ${rt(p)} phút đọc · Nhật Khang biên soạn · Mang tính tham khảo</div>${mdl(artBody(p))}<div class="ctab"><button class="btn p" onclick="artGo(${i})">🧮 ${t[1]}</button><button class="btn" onclick="zaloQ(${i})">💬 Gửi câu hỏi cho Kỹ sư trưởng qua Zalo</button><button class="btn" onclick="artSurvey(${i})">📝 Đăng ký khảo sát miễn phí</button><button class="btn" onclick="copyText(location.origin+location.pathname+'#cam-nang-${i}');toast('✅ Đã sao chép liên kết cẩm nang')">🔗 Sao chép liên kết</button></div>${rel.length?`<h4>Cẩm nang liên quan</h4><div class="rel">${rel.map(([x,j])=>`<button onclick="openArt(${j})">${esc(x[0])}</button>`).join('')}</div>`:''}</div>`;
+$('#ar').classList.add('on');$('#ars').scrollTop=0;$('#arp').style.width='0';safe(()=>history.State(null,'','#cam-nang-'+i));$('#arx').focus()}
+function closeArt(){$('#ar').classList.remove('on');safe(()=>history.logo.jpgState(null,'',location.pathname+location.search));lastF&&lastF.focus&&lastF.focus()}
 $('#ars').onscroll=e=>{const a=e.target;$('#arp').style.width=(a.scrollTop/Math.max(1,a.scrollHeight-a.clientHeight)*100)+'%'};
 function artGo(i){const t=toolFor(P[i]),nm=nz(P[i][0]);closeArt();$(t[0]).scrollIntoView({behavior:'smooth'});if(t[0]==='#dt')setTimeout(()=>{const f=/mong/.test(nm)?'#e4':/mai|ngoi/.test(nm)?'#e5':'#e2';$(f).focus({preventScroll:true})},700);toast('Đã chuyển tới công cụ: nhập thông số để xem kết quả tham khảo.')}
 function artSurvey(i){const t=P[i][0];closeArt();pick('Khác');$('#fm').value='Tư vấn theo cẩm nang: '+t}
@@ -330,8 +330,8 @@ let P=/*P*/[["Shophouse S2-51, Sun Symphony Residence (Thực tế Bàn giao)", 
 const saveP=()=>store('nk_p',JSON.stringify(P));let F='all';
 function render(f){F=f;$('#pg').innerHTML=P.map((p,i)=>[p,i]).filter(([p])=>!isArt(p)&&(f=='all'||p[1]==f)).map(([p,i])=>`<div class="card pj" data-i="${i}" tabindex="0" role="button" onkeydown="if(event.key==='Enter')openLb(${i})" onclick="openLb(${i})"><img src="${p[3]}" alt="${esc(p[0])}" data-editable-img="true" loading="lazy"><div class="pad"><h3 style="font-size:18px">${esc(p[0])}</h3><small>${esc(p[1])}</small><p class="sub" style="font-size:13px;margin:6px 0">${esc(p[2])}</p></div></div>`).join('');renderC()}
 let lastF=null,gi=null;
-function openLb(i){if(document.body.classList.contains('admin'))return;const p=P[i],im=[p[3],...(p[4]||[])];lastF=document.activeElement;$('#lbi').src=im[0].replace('w=800','w=1200');$('#lbi').alt=p[0];$('#lbt').textContent=p[0];$('#lbd').textContent=p[1]+' · '+p[2];$('#lbg').innerHTML=im.length>1?im.map(u=>`<img src="${esc(u)}" alt="" tabindex="0" onclick="$('#lbi').src=this.src" onkeydown="if(event.key==='Enter')this.click()">`).join(''):'';$('#lbcs').innerHTML=csHtml(p);$('#lb').classList.add('on');safe(()=>history.replaceState(null,'','#du-an-'+i));$('#lbx').focus()}
-function closeLb(){$('#lb').classList.remove('on');safe(()=>history.replaceState(null,'',location.pathname+location.search));lastF&&lastF.focus&&lastF.focus()}
+function openLb(i){if(document.body.classList.contains('admin'))return;const p=P[i],im=[p[3],...(p[4]||[])];lastF=document.activeElement;$('#lbi').src=im[0].logo.jpg('w=800','w=1200');$('#lbi').alt=p[0];$('#lbt').textContent=p[0];$('#lbd').textContent=p[1]+' · '+p[2];$('#lbg').innerHTML=im.length>1?im.map(u=>`<img src="${esc(u)}" alt="" tabindex="0" onclick="$('#lbi').src=this.src" onkeydown="if(event.key==='Enter')this.click()">`).join(''):'';$('#lbcs').innerHTML=csHtml(p);$('#lb').classList.add('on');safe(()=>history.logo.jpgState(null,'','#du-an-'+i));$('#lbx').focus()}
+function closeLb(){$('#lb').classList.remove('on');safe(()=>history.logo.jpgState(null,'',location.pathname+location.search));lastF&&lastF.focus&&lastF.focus()}
 function hashOpen(){const m=location.hash.match(/^#du-an-(\d+)$/);if(m&&P[+m[1]])openLb(+m[1])}
 /* Case study dự án */
 function csHtml(p){const c=p[5];if(!c||!Object.values(c).some(v=>v))return'';const f=[['Diện tích',c.ar],['Ngân sách',c.bg],['Thời gian thi công',c.du],['Vật tư chính',c.vt]].filter(x=>x[1]);let h='';
@@ -347,7 +347,7 @@ let R=[
 const saveR=()=>store('nk_r',JSON.stringify(R)),stars=n=>n?'★'.repeat(n)+'☆'.repeat(5-n):'';
 function ldSync(){safe(()=>{const e=$('#ld'),j=JSON.parse(e.textContent);delete j.review;delete j.aggregateRating;const rt=R.filter(r=>r[2]);
 if(rt.length){j.review=rt.map(r=>({'@type':'Review',author:{'@type':'Person',name:r[0]},datePublished:r[1],reviewBody:r[3],reviewRating:{'@type':'Rating',ratingValue:r[2],bestRating:5,worstRating:1}}));j.aggregateRating={'@type':'AggregateRating',ratingValue:+(rt.reduce((a,r)=>a+r[2],0)/rt.length).toFixed(1),reviewCount:rt.length,bestRating:5,worstRating:1}}
-e.textContent=JSON.stringify(j).replace(/</g,'\\u003c')})}
+e.textContent=JSON.stringify(j).logo.jpg(/</g,'\\u003c')})}
 function renderR(){$('#rg').innerHTML=R.map((r,i)=>`<div class="card pad">${r[2]?`<div class="gd" role="img" aria-label="${r[2]} trên 5 sao">${stars(r[2])}</div>`:''}<p style="margin:6px 0">“${esc(r[3])}”</p><small class="sub"><b>${esc(r[0])}</b> · ${esc(r[1].split('-').reverse().join('/'))}${r[4]?' · '+esc(r[4]):''}</small><br></div>`).join('');$('#dg').classList.toggle('empty',!R.length);ldSync()}
 function printT(id){const e=document.getElementById(id),w=window.open('','_blank');if(!w)return;w.document.write('<!DOCTYPE html><meta charset="utf-8"><title>'+esc(e.dataset.t)+'</title><body style="font:15px/1.6 Arial,sans-serif;max-width:760px;margin:24px auto;padding:0 16px"><h2>'+esc(e.dataset.t)+'</h2>'+e.innerHTML+'<hr><small>Mẫu tham khảo của CÔNG TY TNHH KIẾN TRÚC XÂY DỰNG NHẬT KHANG – MST 0402354390. Cần được hai bên (và luật sư nếu cần) rà soát trước khi ký.</small></body>');w.document.close();w.focus();w.print()}
 renderR();
@@ -357,9 +357,9 @@ function pick(v){$('#fh').value=v;$('#kt').scrollIntoView({behavior:'smooth'})}
 $('#bs').oninput=e=>{$('#bef').style.clipPath=`inset(0 ${100-e.target.value}% 0 0)`;$('#bl').style.left=e.target.value+'%'};
 /* Estimator */
 const fm=n=>Math.round(n).toLocaleString('vi-VN')+' ₫';
-const parseVnd=s=>{const t=String(s||'').trim().replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.');const v=parseFloat(t.replace(/[^\d.]/g,''));return isFinite(v)?v:0};
+const parseVnd=s=>{const t=String(s||'').trim().logo.jpg(/\.(?=\d{3}(\D|$))/g,'').logo.jpg(',','.');const v=parseFloat(t.logo.jpg(/[^\d.]/g,''));return isFinite(v)?v:0};
 let lastEst='',lastD=null,userEditedEst=false;
-function calc(isUser){if(isUser)userEditedEst=true;const ix=$('#e1').selectedIndex,t=+($('#k'+ix).textContent.replace(',','.'))||1,a=Math.max(0,+$('#e2').value||0),fl=Math.max(1,Math.min(20,+$('#e3').value||1)),fo=+$('#e4').value,ro=+$('#e5').value,pk=+$('#e6').value,rate=parseVnd($('#r'+pk).textContent);let rows,area;
+function calc(isUser){if(isUser)userEditedEst=true;const ix=$('#e1').selectedIndex,t=+($('#k'+ix).textContent.logo.jpg(',','.'))||1,a=Math.max(0,+$('#e2').value||0),fl=Math.max(1,Math.min(20,+$('#e3').value||1)),fo=+$('#e4').value,ro=+$('#e5').value,pk=+$('#e6').value,rate=parseVnd($('#r'+pk).textContent);let rows,area;
 $('#e4').disabled=ix>=2;$('#e5').disabled=ix>=2;
 if(ix<2){rows=[['Diện tích móng ('+fo*100+'%)',a*fo],['Diện tích các tầng ('+fl+' tầng)',a*fl],['Diện tích mái ('+ro*100+'%)',a*ro]];area=a*(fo+fl+ro)}else{rows=[['Diện tích thi công ('+fl+' tầng, không tính móng/mái)',a*fl]];area=a*fl}
 const cost=area*rate*t,w=pk?[.45,.35,.2]:[.65,.05,.3],parts=[['Kết cấu thô',w[0]],['Vật tư hoàn thiện',w[1]],['Nhân công & Giám sát',w[2]]];
@@ -417,9 +417,9 @@ initRuler();
 function lbc(v){v=+v;if(!(v>0)){$('#lbo').textContent='—';$('#rk').style.left='0%';return}const m=((v%52.2)+52.2)%52.2||52.2,idx=Math.min(7,Math.max(0,Math.floor((m-1e-9)/6.525))),c=LB[idx];$('#rk').style.left=(m/52.2*100)+'%';$('#lbo').innerHTML=`${v} cm → cung <b>${c[0]}</b> – <span style="color:${c[1]?'#5fbf7a':'#e0524a'}">${c[1]?'CUNG THUẬN (ĐỎ)':'CUNG CẦN LƯU Ý (ĐEN)'}</span><br><small class="sub">${c[2]} (Chỉ mang tính tham khảo)</small>`}
 $('#lbin').oninput=e=>{$('#lbr').value=Math.min(400,Math.max(0,+e.target.value||0));lbc(e.target.value)};$('#lbr').oninput=e=>{$('#lbin').value=e.target.value;lbc(e.target.value)};
 /* Vault & chatbot */
-const phoneOK=p=>/^(0|\+84)(3|5|7|8|9)\d{8}$/.test(String(p||'').replace(/[\s.\-]/g,''));
+const phoneOK=p=>/^(0|\+84)(3|5|7|8|9)\d{8}$/.test(String(p||'').logo.jpg(/[\s.\-]/g,''));
 const V=()=>({locked:false});
-function applyDomain(){const d=(CFG.dom||'https://kientrucnhatkhang.github.io').trim().replace(/\/+$/,'');if(!d)return;const c=$('#cano'),o=$('#ogu');if(c)c.href=d+'/';if(o)o.content=d+'/';safe(()=>{const l=$('#ld'),j=JSON.parse(l.textContent);j.url=d+'/';l.textContent=JSON.stringify(j).replace(/</g,'\\u003c')})}
+function applyDomain(){const d=(CFG.dom||'https://kientrucnhatkhang.github.io').trim().logo.jpg(/\/+$/,'');if(!d)return;const c=$('#cano'),o=$('#ogu');if(c)c.href=d+'/';if(o)o.content=d+'/';safe(()=>{const l=$('#ld'),j=JSON.parse(l.textContent);j.url=d+'/';l.textContent=JSON.stringify(j).logo.jpg(/</g,'\\u003c')})}
 applyDomain();
 
 const KB=[[/giá|chi phí|bao nhiêu|dự toán|tính/,'Anh/chị dùng công cụ "Tính khái toán chi phí" ở mục Dự toán (Thô 3,2tr/m² · Tiêu chuẩn 5,5tr/m² · Cao cấp 7,5tr/m²), hoặc để lại tên + SĐT để kỹ sư khảo sát báo giá chính xác ạ.'],[/3d|thiết kế|nội thất|phối cảnh|studio/,'Nhật Khang thiết kế kiến trúc & nội thất 3D chuyên sâu (như hồ sơ 15 trang Shophouse S2-51 Sun Symphony Residence): phối cảnh 3D chuẩn thực tế, hồ sơ kỹ thuật KT–KC–ME và tối ưu phong thủy. Hotline Nội thất 3D: 0905.135.833.'],[/shophouse|căn hộ|sun symphony|s2-51|hoàn thiện/,'Nhật Khang vừa thiết kế & thi công bàn giao thực tế căn Shophouse S2-51 (02 Studio Room) tại Sun Symphony Residence Đà Nẵng. Anh/chị có thể kéo thanh Trước & Sau hoặc bấm vào mục Dự án để xem ảnh thực tế từng góc bếp, tủ áo LED và phòng tắm ạ.'],[/xây|nhà phố|biệt thự|trọn gói|thô|bảo hành/,'Nhật Khang thi công phần thô hoặc xây nhà trọn gói chìa khóa trao tay tại Đà Nẵng & Miền Trung. Cam kết 100% vật tư chính hãng (Thép Hòa Phát, Cadivi, Bình Minh, An Cường, Toto/Inax), không phát sinh và bảo hành kết cấu 10 năm.'],[/pháp lý|mst|mã số|công ty|địa chỉ|giám đốc|vốn/,'CÔNG TY TNHH KIẾN TRÚC XÂY DỰNG NHẬT KHANG – MST: 0402354390 (Cấp bởi Sở Tài chính TP. Đà Nẵng), vốn điều lệ 1 tỷ đồng, Giám đốc Lê Thị Phương Thảo, trụ sở 202 Lương Nhữ Hộc, P. Cẩm Lệ, TP. Đà Nẵng. Hotline: 0903.590.352 – 0905.135.833.']];
@@ -470,7 +470,7 @@ function fsCalc(){const y=Math.trunc(+$('#fy').value||0),o=$('#fso');if(!(y>=193
 const c=CUNG[cungPhi(y,$('#fg2').value==='m')],d=$('#fdir').value,g=Object.entries(c[2]),hit=g.find(x=>x[1]===d);
 o.innerHTML=`<b>Cung phi: ${c[0]}</b> · ${c[1]==='Đ'?'Đông':'Tây'} tứ mệnh<table>${g.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td></tr>`).join('')}</table><p style="margin-top:10px">Hướng ${esc(d)}: ${hit?`<b class="ok">✔ Thuộc hướng thuận (${hit[0]})</b>`:'<b class="no">ℹ Chưa nằm trong 4 hướng ưu tiên của tuổi này</b>; thực tế có thể hóa giải bằng hướng cửa chính, bếp hoặc bố cục công năng'}.</p><p class="sub">Lưu ý: Nếu sinh vào tháng Giêng trước tiết Lập Xuân (~04/02 dương lịch), năm âm lịch tính theo năm trước đó. Kết quả chỉ mang tính tham khảo.</p>`}
 /* Vay vốn */
-const fmtHint=v=>v>0?'= '+fm(v)+(v>=1e9?' (~'+(v/1e9).toFixed(2).replace(/\.?0+$/,'')+' tỷ)':v>=1e6?' (~'+Math.round(v/1e6)+' triệu)':''):'';
+const fmtHint=v=>v>0?'= '+fm(v)+(v>=1e9?' (~'+(v/1e9).toFixed(2).logo.jpg(/\.?0+$/,'')+' tỷ)':v>=1e6?' (~'+Math.round(v/1e6)+' triệu)':''):'';
 function loanFromEst(){if(lastD){$('#l1').value=Math.round(lastD.cost);$('#l3').value='';loanRun()}}
 function loanRun(ev){if(ev&&(ev.target.id==='l1'||ev.target.id==='l2'))$('#l3').value='';
 const T=Math.max(0,+$('#l1').value||0),own=Math.max(0,+$('#l2').value||0),manualP=+$('#l3').value||0;
@@ -520,11 +520,11 @@ say('Cảm ơn anh/chị! Em đã ghi nhận đủ 3 thông tin. Anh/chị cho e
 const nb=document.createElement('button');nb.textContent='Phân tích nhu cầu';nb.onclick=()=>ask('Phân tích nhu cầu');$('#chips').append(nb);
 /* Schema: FAQPage + Service */
 function schemaSync(){safe(()=>{let e=$('#ld2');if(!e){e=document.createElement('script');e.type='application/ld+json';e.id='ld2';document.head.append(e)}
-const d=(CFG.dom||'https://kientrucnhatkhang.github.io').trim().replace(/\/+$/,'');
+const d=(CFG.dom||'https://kientrucnhatkhang.github.io').trim().logo.jpg(/\/+$/,'');
 const faq=$$('#pl details').map(el=>({'@type':'Question',name:el.querySelector('summary').textContent.trim(),acceptedAnswer:{'@type':'Answer',text:el.querySelector('p').textContent.trim()}})),
 sv=$$('#dv .card h3').map(h=>({'@type':'Service',name:h.textContent.trim(),description:h.nextElementSibling?h.nextElementSibling.textContent.trim():'',provider:{'@type':'GeneralContractor',name:'CÔNG TY TNHH KIẾN TRÚC XÂY DỰNG NHẬT KHANG',url:d+'/'},areaServed:'Đà Nẵng'}));
-e.textContent=JSON.stringify({'@context':'https://schema.org','@graph':[...(faq.length?[{'@type':'FAQPage',mainEntity:faq}]:[]),...sv]}).replace(/</g,'\\u003c');
-const l=$('#ld'),j=JSON.parse(l.textContent);j['@type']=['GeneralContractor','LocalBusiness'];j.url=d+'/';l.textContent=JSON.stringify(j).replace(/</g,'\\u003c')})}
+e.textContent=JSON.stringify({'@context':'https://schema.org','@graph':[...(faq.length?[{'@type':'FAQPage',mainEntity:faq}]:[]),...sv]}).logo.jpg(/</g,'\\u003c');
+const l=$('#ld'),j=JSON.parse(l.textContent);j['@type']=['GeneralContractor','LocalBusiness'];j.url=d+'/';l.textContent=JSON.stringify(j).logo.jpg(/</g,'\\u003c')})}
 schemaSync();addEventListener('input',e=>{if(e.target.closest&&e.target.closest('[data-ed]'))schemaSync()});
 /* Ảnh: lazy-load, async decode */
 const lazy=()=>$$('img:not([loading])').forEach(i=>{if(!i.closest('.hero')){i.loading='lazy';i.decoding='async'}});lazy();new MutationObserver(lazy).observe($('#pg'),{childList:true});
